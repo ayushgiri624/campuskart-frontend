@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { auth } from "../firebase";
+import { onAuthStateChanged } from "firebase/auth";
 
 const API = "https://campuskart-backend-u4gf.onrender.com";
 
@@ -8,12 +10,34 @@ export default function ProductDetails() {
   const { id } = useParams();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, (u) => setUser(u));
+    return () => unsub();
+  }, []);
 
   useEffect(() => {
     axios.get(`${API}/api/products/${id}`)
       .then(res => { setProduct(res.data); setLoading(false); })
       .catch(() => setLoading(false));
   }, [id]);
+
+  const handleDelete = async () => {
+    if (!window.confirm("Are you sure you want to delete this product?")) return;
+    setDeleting(true);
+    try {
+      await axios.delete(`${API}/api/products/${id}`);
+      navigate("/");
+    } catch (err) {
+      alert("Failed to delete. Try again.");
+      setDeleting(false);
+    }
+  };
+
+  const isOwner = user && product && user.email === product.sellerEmail;
 
   if (loading) return (
     <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Segoe UI', sans-serif" }}>
@@ -72,12 +96,20 @@ export default function ProductDetails() {
                 style={{ flex: 1, background: "#2563eb", color: "white", padding: "14px", borderRadius: "8px", textDecoration: "none", fontWeight: "600", fontSize: "15px", textAlign: "center" }}>
                 📧 Email Seller
               </a>
-              <a href={`https://wa.me/?text=Hi, I am interested in your product "${product.title}" listed for ₹${product.price} on CampusKart.`}
+              <a href={`https://wa.me/${product.sellerWhatsapp || ""}?text=Hi, I am interested in your product "${product.title}" listed for ₹${product.price} on CampusKart.`}
                 target="_blank" rel="noreferrer"
                 style={{ flex: 1, background: "#16a34a", color: "white", padding: "14px", borderRadius: "8px", textDecoration: "none", fontWeight: "600", fontSize: "15px", textAlign: "center" }}>
                 💬 WhatsApp
               </a>
             </div>
+
+            {/* Delete button — only for the seller */}
+            {isOwner && (
+              <button onClick={handleDelete} disabled={deleting}
+                style={{ width: "100%", marginTop: "16px", background: deleting ? "#fca5a5" : "#ef4444", color: "white", padding: "12px", borderRadius: "8px", border: "none", fontSize: "15px", fontWeight: "600", cursor: deleting ? "not-allowed" : "pointer" }}>
+                {deleting ? "Deleting..." : "🗑️ Delete My Listing"}
+              </button>
+            )}
 
             <p style={{ color: "#9ca3af", fontSize: "12px", marginTop: "16px", textAlign: "center" }}>
               Listed on {new Date(product.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}
