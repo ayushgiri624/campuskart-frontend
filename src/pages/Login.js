@@ -19,13 +19,20 @@ export default function Login() {
   };
 
   const handleGoogle = async () => {
-    try {
-      await signInWithPopup(auth, googleProvider);
-      navigate("/");
-    } catch (err) {
-      setError("Google sign-in failed");
+  try {
+    await signInWithPopup(auth, googleProvider);
+    navigate("/");
+  } catch (err) {
+    console.error("Google error:", err.code, err.message);
+    if (err.code === "auth/popup-blocked") {
+      setError("Popup was blocked. Please allow popups for this site and try again.");
+    } else if (err.code === "auth/popup-closed-by-user") {
+      setError("Sign-in cancelled. Please try again.");
+    } else {
+      setError(`Google sign-in failed: ${err.code}`);
     }
-  };
+  }
+};
 
   return (
     <div style={{ minHeight: "100vh", background: "#f3f4f6", display: "flex", flexDirection: "column", fontFamily: "'Segoe UI', sans-serif" }}>
