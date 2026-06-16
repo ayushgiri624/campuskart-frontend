@@ -41,7 +41,7 @@ export default function Home() {
     .sort((a, b) => {
       if (sortBy === "price_asc") return a.price - b.price;
       if (sortBy === "price_desc") return b.price - a.price;
-      return new Date(b.createdAt) - new Date(a.createdAt); // newest
+      return new Date(b.createdAt) - new Date(a.createdAt);
     });
 
   const getCategoryCount = (cat) =>
@@ -62,8 +62,10 @@ export default function Home() {
                 style={{ background: "white", color: "#2563eb", padding: "7px 16px", borderRadius: "8px", textDecoration: "none", fontSize: "14px", fontWeight: "700" }}>
                 + Sell
               </Link>
-              <img src={avatarSrc} alt="avatar" referrerPolicy="no-referrer"
-                style={{ width: "36px", height: "36px", borderRadius: "50%", border: "2px solid white", objectFit: "cover" }} />
+              <Link to="/profile">
+                <img src={avatarSrc} alt="avatar" referrerPolicy="no-referrer"
+                  style={{ width: "36px", height: "36px", borderRadius: "50%", border: "2px solid white", objectFit: "cover", cursor: "pointer" }} />
+              </Link>
               <span style={{ color: "white", fontSize: "14px", fontWeight: "500" }}>
                 {user.displayName ? user.displayName.split(" ")[0] : user.email.split("@")[0]}
               </span>
