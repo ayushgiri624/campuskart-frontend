@@ -4,7 +4,7 @@ import axios from "axios";
 import { auth } from "../firebase";
 
 const API = "https://campuskart-backend-u4gf.onrender.com";
-const CLOUD_NAME = "dmqlyume7";
+const CLOUD_NAME = "dmqiyume7"; // ⚠️ VERIFY this matches your Cloudinary dashboard exactly
 const UPLOAD_PRESET = "campuskart_uploads";
 const categories = ["Electronics", "Books", "Furniture", "Transport", "Services", "Other"];
 
@@ -54,9 +54,12 @@ export default function AddProduct() {
       );
       setUploading(false);
       return res.data.secure_url;
-    } catch {
+    } catch (err) {
       setUploading(false);
-      throw new Error("Image upload failed.");
+      console.error("Cloudinary error:", err.response?.data || err.message);
+      throw new Error(
+        err.response?.data?.error?.message || "Image upload failed."
+      );
     }
   };
 
