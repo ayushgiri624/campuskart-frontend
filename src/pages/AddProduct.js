@@ -4,7 +4,7 @@ import axios from "axios";
 import { auth } from "../firebase";
 
 const API = "https://campuskart-backend-u4gf.onrender.com";
-const CLOUD_NAME = "dmqiyume7"; // ⚠️ VERIFY this matches your Cloudinary dashboard exactly
+const CLOUD_NAME = "dmqiyume7";
 const UPLOAD_PRESET = "campuskart_uploads";
 const categories = ["Electronics", "Books", "Furniture", "Transport", "Services", "Other"];
 
@@ -46,20 +46,23 @@ export default function AddProduct() {
     const formData = new FormData();
     formData.append("file", imageFile);
     formData.append("upload_preset", UPLOAD_PRESET);
+
     setUploading(true);
     try {
-      const res = await axios.post(
+      const res = await fetch(
         `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
-        formData
+        { method: "POST", body: formData }
       );
+      const data = await res.json();
       setUploading(false);
-      return res.data.secure_url;
+      if (!res.ok) {
+        console.error("Cloudinary error:", data);
+        throw new Error(data.error?.message || "Image upload failed.");
+      }
+      return data.secure_url;
     } catch (err) {
       setUploading(false);
-      console.error("Cloudinary error:", err.response?.data || err.message);
-      throw new Error(
-        err.response?.data?.error?.message || "Image upload failed."
-      );
+      throw new Error(err.message || "Image upload failed.");
     }
   };
 
